@@ -1,9 +1,7 @@
 
-# quest v0.0.1
+# quest v0.1.0
 
 Bare bones HTTP requests for browser and server.
-
-**NOTE:** Browser implementation not ready yet!
 
 ### `quest(method, url, headers)`
 
