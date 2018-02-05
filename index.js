@@ -34,7 +34,9 @@ quest.stream = function(url, headers) {
   err.args = [url, headers]
   thru.error = err
 
-  const req = quest('GET', url, headers)
+  const req = url instanceof http.OutgoingMessage
+    ? url : quest('GET', url, headers)
+
   req.on('response', (res) => {
     err.req = req
     err.res = res
