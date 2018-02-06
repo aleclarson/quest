@@ -3,7 +3,7 @@
 var setProto = Object.setPrototypeOf
 
 function quest(method, url, headers) {
-  const req = Object.create(Request)
+  var req = Object.create(Request)
   req.method = method
   req.url = url
   return Object.defineProperty(req, '_xhr', {
@@ -18,7 +18,7 @@ quest.stream = function() {
 
 quest.fetch = function(url, headers) {
   return new Promise(function(resolve, reject) {
-    const xhr = open('GET', url, headers)
+    var xhr = open('GET', url, headers)
     onLoad(resolve, xhr)
     onError(reject, xhr)
     xhr.send()
@@ -37,7 +37,7 @@ module.exports = quest
 
 var Request = {
   on: function(event, listener) {
-    const xhr = this._xhr
+    var xhr = this._xhr
     if (event == 'error') {
       onError(listener, xhr)
     } else if (event == 'load') {
@@ -70,7 +70,7 @@ var Request = {
 }
 
 function open(method, url, headers) {
-  const xhr = new XMLHttpRequest()
+  var xhr = new XMLHttpRequest()
   xhr.open(method, url)
   if (headers) {
     for (var key in headers) {
