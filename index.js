@@ -4,7 +4,7 @@ const {PassThrough} = require('stream')
 const https = require('https')
 const http = require('http')
 
-const urlRE = /(.+):\/\/([^\/]+)(.*)/
+const urlRE = /(.+):\/\/([^\/\:]+)(?:\:([^\/]+))?(.*)/
 const protocols = {http, https}
 
 module.exports = quest
@@ -21,7 +21,8 @@ function quest(method, url, headers) {
   return protocol.request({
     method,
     host: parts[2],
-    path: parts[3] || '/',
+    port: parts[3],
+    path: parts[4] || '/',
     headers,
   })
 }
