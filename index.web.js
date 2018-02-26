@@ -37,13 +37,12 @@ module.exports = quest
 
 var Request = {
   on: function(event, listener) {
-    var xhr = this._xhr
     if (event == 'error') {
-      onError(listener, xhr)
+      onError(listener, this._xhr)
     } else if (event == 'load') {
-      onLoad(listener, xhr)
+      onLoad(listener, this._xhr)
     } else {
-      xhr['on' + event] = listener
+      this._xhr['on' + event] = listener
     }
     return this
   },
