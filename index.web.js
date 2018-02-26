@@ -59,11 +59,19 @@ var Request = {
     if (!this._xhr.onerror) {
       onError(console.error, this._xhr)
     }
-    this._xhr.send(this._blob ? new Blob(this._blob) : null)
+    var blob = this._blob
+    if (Array.isArray(blob)) {
+      blob = new Blob(blob)
+    }
+    this._xhr.send(blob || null)
     return this
   },
   send: function(body) {
-    if (body) this.write(body)
+    if (body instanceof Blob) {
+      this._blob = body
+    } else {
+      this.write(body)
+    }
     return this.end()
   }
 }
