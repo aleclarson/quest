@@ -47,8 +47,8 @@ var Request = {
     return this
   },
   write: function(chunk) {
-    if (!this._blob) this._blob = []
-    this._blob.push(chunk)
+    if (this._blob) this._blob = [chunk]
+    else this._blob.push(chunk)
     return this
   },
   end: function() {
