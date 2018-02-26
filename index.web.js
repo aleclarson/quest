@@ -97,17 +97,14 @@ function onLoad(listener, xhr) {
       } catch(e) {
         err = new Error('Expected response to have 2xx status, instead got ' + xhr.status)
       }
-      err.status = xhr.status
-      Object.defineProperty(err, 'headers', {
-        get: function() {return xhr.headers}
-      })
       if (xhr.onerror) {
-        xhr.onerror(err)
+        xhr.onerror(err, xhr)
       } else {
         console.error(err)
       }
     } else {
-      listener('response' in xhr ? xhr.response : xhr.responseText)
+      var body = 'response' in xhr ? xhr.response : xhr.responseText
+      listener(body, xhr)
     }
   }
 }
@@ -116,9 +113,9 @@ function onError(listener, xhr) {
   xhr.onerror = xhr.ontimeout = function(err) {
     if (!err) {
       err = new Error('Request timed out')
-      err.status = 522
+      xhr.status = 522
     }
-    listener(err)
+    listener(err, xhr)
   }
 }
 
