@@ -1,5 +1,3 @@
-// @flow
-
 const {PassThrough} = require('stream')
 const https = require('https')
 const http = require('http')
