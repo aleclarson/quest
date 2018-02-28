@@ -1,7 +1,5 @@
 // TODO: Add response streaming
 
-var setProto = Object.setPrototypeOf
-
 function quest(method, url, headers) {
   var req = Object.create(Request)
   req.method = method
