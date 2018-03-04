@@ -51,3 +51,30 @@ if (json == null) {
   console.log('The response was empty')
 }
 ```
+
+## Tips and tricks
+
+In NodeJS, the `stream`, `fetch`, and `json` functions all accept a `ClientRequest` object (the same object type that `quest()` returns). This means you can easily avoid lots of boilerplate code for non-GET requests.
+
+```js
+const req = quest('PUT', 'https://localhost:8000', headers)
+req.write(json)
+
+// Convert the ClientRequest into a response object.
+quest.stream(req)
+  .on('data', (data) => {})
+  .on('error', (err) => {})
+
+// Convert the ClientRequest into a Buffer promise.
+quest.fetch(req).then(buffer => {})
+
+// Convert the ClientRequest into a JSON promise.
+quest.json(req).then(data => {})
+```
+
+## Caveats
+
+- The `stream` function can only be used in NodeJS (for now)
+- The request object returned by `quest()` cannot be passed
+  to the other functions in the web version (yet)
+
