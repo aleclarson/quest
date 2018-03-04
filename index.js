@@ -33,7 +33,7 @@ quest.stream = function(url, headers) {
   err.args = [url, headers]
   thru.error = err
 
-  const req = url instanceof http.OutgoingMessage
+  const req = url instanceof http.ClientRequest
     ? url : quest('GET', url, headers)
 
   req.on('response', (res) => {
@@ -104,3 +104,4 @@ function concat(res) {
   })
   return thru
 }
+
