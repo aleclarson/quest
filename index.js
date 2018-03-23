@@ -116,7 +116,7 @@ const sockProto = {
     if (http.METHODS.indexOf(method) < 0) {
       throw Error('Unknown HTTP method: ' + method)
     }
-    return protocol.request({
+    return http.request({
       socketPath: this.path,
       headers,
       method,
