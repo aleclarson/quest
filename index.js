@@ -25,6 +25,12 @@ function quest(method, url, headers) {
   })
 }
 
+quest.sock = function(path) {
+  const sock = Object.create(sockProto)
+  sock.path = path
+  return sock
+}
+
 quest.stream = function(url, headers) {
   const thru = new PassThrough()
 
@@ -105,3 +111,25 @@ function concat(res) {
   return thru
 }
 
+const sockProto = {
+  request(method, path, headers) {
+    if (http.METHODS.indexOf(method) < 0) {
+      throw Error('Unknown HTTP method: ' + method)
+    }
+    return protocol.request({
+      socketPath: this.path,
+      headers,
+      method,
+      path,
+    })
+  },
+  stream: bind('stream'),
+  fetch: bind('fetch'),
+  json: bind('json'),
+}
+
+function bind(method) {
+  return function() {
+    return quest[method](this.request('GET', ...arguments))
+  }
+}
