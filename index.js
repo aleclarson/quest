@@ -70,6 +70,19 @@ quest.stream = function(url, headers) {
   return thru
 }
 
+quest.send = function(req, body) {
+  if (body) {
+    if (!Buffer.isBuffer(body)) {
+      if (body.constructor == Object)
+        body = JSON.stringify(body)
+      if (typeof body == 'string')
+        body = Buffer.from(body)
+    }
+    req.write(body)
+  }
+  return quest.fetch(req)
+}
+
 quest.fetch = function(url, headers) {
   const res = quest.stream(url, headers)
   return new Promise((resolve, reject) => {
