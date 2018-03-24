@@ -87,7 +87,9 @@ quest.fetch = function(url, headers) {
   const res = quest.stream(url, headers)
   return new Promise((resolve, reject) => {
     res.on('error', reject)
-    concat(res).on('data', resolve)
+    concat(res)
+      .on('data', resolve)
+      .on('end', resolve)
   })
 }
 
