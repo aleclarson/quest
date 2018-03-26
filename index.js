@@ -45,8 +45,14 @@ quest.stream = function(url, headers) {
   req.on('response', (res) => {
     err.req = req
     err.res = res
-    const code = res.statusCode
-    if (code >= 200 && code < 300) {
+
+    const status = res.statusCode
+    thru.status = status
+
+    const headers = res.headers
+    thru.headers = headers
+
+    if (status >= 200 && status < 300) {
       res.pipe(thru)
       res.on('error', (e) => {
         res.destroy()
@@ -55,8 +61,8 @@ quest.stream = function(url, headers) {
         thru.emit('error', err)
       })
     } else {
-      let msg = res.headers['error'] || res.headers['x-error']
-      err.message = msg || code + ' ' + http.STATUS_CODES[code]
+      let msg = headers['error'] || headers['x-error']
+      err.message = msg || status + ' ' + http.STATUS_CODES[status]
       thru.emit('error', err)
     }
   }).on('error', (e) => {
