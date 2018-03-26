@@ -94,12 +94,14 @@ quest.send = function(req, body) {
   return quest.stream(req)
 }
 
-quest.fetch = function(url, headers) {
-  const res = quest.stream(url, headers)
+quest.read = function(res) {
   return new Promise((resolve, reject) => {
-    res.on('error', reject)
-    concat(res, resolve)
+    concat(res.on('error', reject), resolve)
   })
+}
+
+quest.fetch = function(url, headers) {
+  return quest.read(quest.stream(url, headers))
 }
 
 quest.json = function(url, headers) {
