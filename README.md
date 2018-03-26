@@ -1,5 +1,5 @@
 
-# quest v0.5.2
+# quest v0.6.0
 
 Bare bones HTTP requests for browser and server.
 
