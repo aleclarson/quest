@@ -92,9 +92,7 @@ quest.fetch = function(url, headers) {
   const res = quest.stream(url, headers)
   return new Promise((resolve, reject) => {
     res.on('error', reject)
-    concat(res)
-      .on('data', resolve)
-      .on('end', resolve)
+    concat(res, resolve)
   })
 }
 
@@ -102,7 +100,7 @@ quest.json = function(url, headers) {
   const res = quest.stream(url, headers)
   return new Promise((resolve, reject) => {
     res.on('error', reject)
-    concat(res).on('data', (body) => {
+    concat(res, (body) => {
       if (!body.length) {
         return resolve(null)
       }
@@ -119,16 +117,13 @@ quest.json = function(url, headers) {
 }
 
 // Buffer the entire stream into memory.
-function concat(res) {
-  const thru = new PassThrough()
+function concat(res, done) {
   const chunks = []
   res.on('data', (chunk) => {
     chunks.push(chunk)
   }).on('end', () => {
-    thru.write(Buffer.concat(chunks))
-    thru.end()
+    done(Buffer.concat(chunks))
   })
-  return thru
 }
 
 const sockProto = {
