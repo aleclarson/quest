@@ -55,8 +55,8 @@ quest.stream = function(url, headers) {
         thru.emit('error', err)
       })
     } else {
-      err.code = code
-      err.message = code + ' ' + http.STATUS_CODES[code]
+      let msg = res.headers['error'] || res.headers['x-error']
+      err.message = msg || code + ' ' + http.STATUS_CODES[code]
       thru.emit('error', err)
     }
   }).on('error', (e) => {
