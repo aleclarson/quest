@@ -95,6 +95,9 @@ quest.send = function(req, body) {
 }
 
 quest.read = function(res) {
+  if (res instanceof http.ClientRequest) {
+    res = quest.stream(res)
+  }
   return new Promise((resolve, reject) => {
     concat(res.on('error', reject), resolve)
   })
