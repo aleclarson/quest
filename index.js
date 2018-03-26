@@ -73,11 +73,16 @@ quest.stream = function(url, headers) {
 quest.send = function(req, body) {
   if (body) {
     if (!Buffer.isBuffer(body)) {
-      if (body.constructor == Object)
+      if (body.constructor == Object) {
+        req.setHeader('Content-Type', 'application/json')
+        req.setHeader('Content-Encoding', 'gzip')
         body = JSON.stringify(body)
-      if (typeof body == 'string')
+      }
+      if (typeof body == 'string') {
         body = Buffer.from(body)
+      }
     }
+    req.setHeader('Content-Length', Buffer.byteLength(body))
     req.write(body)
   }
   return quest.fetch(req)
