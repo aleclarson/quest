@@ -32,48 +32,58 @@ quest.sock = function(path) {
 }
 
 quest.stream = function(url, headers) {
+  const err = new Error()
   const thru = new PassThrough()
 
-  // Capture the stack trace early.
-  const err = new Error()
-  err.args = [url, headers]
-  thru.error = err
-
-  const req = url instanceof http.ClientRequest
-    ? url : quest('GET', url, headers)
+  let req
+  if (url instanceof http.ClientRequest) {
+    req = url
+  } else {
+    req = quest('GET', url, headers)
+    err.url = url
+    err.headers = headers
+  }
 
   req.on('response', (res) => {
-    err.req = req
-    err.res = res
+    thru.status = res.statusCode
+    thru.headers = res.headers
+  })
 
-    const status = res.statusCode
-    thru.status = status
-
-    const headers = res.headers
-    thru.headers = headers
-
-    if (status >= 200 && status < 300) {
-      res.pipe(thru)
-      res.on('error', (e) => {
-        res.destroy()
-        err.code = e.code
-        err.message = e.message
-        thru.emit('error', err)
-      })
-    } else {
-      let msg = headers['error'] || headers['x-error']
-      err.message = msg || status + ' ' + http.STATUS_CODES[status]
-      thru.emit('error', err)
-    }
-  }).on('error', (e) => {
-    req.destroy()
-    err.req = req
-    err.code = e.code
-    err.message = e.message
+  quest.ok(req, err).then(res => {
+    res.pipe(thru)
+  }, (err) => {
     thru.emit('error', err)
   })
-  req.end()
+
   return thru
+}
+
+quest.ok = function(req, e) {
+  const err = e || new Error()
+  return new Promise((resolve, reject) => {
+    const onError = (e) => {
+      req.destroy()
+      err.code = e.code
+      err.message = e.message
+      reject(err)
+    }
+    req.on('error', onError)
+    req.on('response', (res) => {
+      const status = res.statusCode
+      if (status >= 200 && status < 300) {
+        res.on('error', onError)
+        resolve(res)
+      } else {
+        err.code = status
+        err.message =
+          res.headers['error'] ||
+          res.headers['x-error'] ||
+          status + ' ' + http.STATUS_CODES[status]
+        reject(err)
+      }
+    })
+    req.end()
+  })
 }
 
 quest.send = function(req, body) {
