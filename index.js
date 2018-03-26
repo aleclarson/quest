@@ -118,8 +118,7 @@ quest.fetch = function(url, headers) {
 }
 
 quest.json = function(url, headers) {
-  const res = typeof url == 'string' ?
-    quest.stream(url, headers) : url
+  const res = url.readable ? url : quest.stream(url, headers)
   return new Promise((resolve, reject) => {
     res.on('error', reject)
     concat(res, (body) => {
