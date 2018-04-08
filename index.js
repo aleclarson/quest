@@ -51,7 +51,9 @@ quest.stream = function(url, headers) {
   }
 
   req.on('response', (stream) => {
-    res.status = stream.statusCode
+    let status = stream.statusCode
+    res.ok = status >= 200 && status < 300
+    res.status = status
     res.headers = stream.headers
   })
 
