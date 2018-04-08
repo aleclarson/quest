@@ -17,6 +17,7 @@ function quest(method, url, headers) {
   if (!protocol) {
     throw Error('Unsupported url: ' + url)
   }
+  prepareHeaders(headers)
   return protocol.request({
     method,
     host: parts[2],
@@ -150,11 +151,26 @@ function concat(res, done) {
   })
 }
 
+function prepareHeaders(headers) {
+  if (!headers) return
+  for (let name in headers) {
+    let value = headers[name]
+    if (value == null) {
+      delete headers[name]
+    } else if (Array.isArray(value)) {
+      headers[name] = value.join(',')
+    } else if (typeof value != 'string') {
+      headers[name] = String(value)
+    }
+  }
+}
+
 const sockProto = {
   request(method, path, headers) {
     if (http.METHODS.indexOf(method) < 0) {
       throw Error('Unknown HTTP method: ' + method)
     }
+    prepareHeaders(headers)
     return http.request({
       socketPath: this.path,
       headers,
