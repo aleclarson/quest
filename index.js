@@ -1,9 +1,10 @@
-const {PassThrough} = require('stream')
+const {Readable} = require('stream')
 const https = require('https')
 const http = require('http')
 
 const urlRE = /(.+):\/\/([^\/\:]+)(?:\:([^\/]+))?(.*)/
 const protocols = {http, https}
+const noop = Function.prototype
 
 module.exports = quest
 
@@ -33,7 +34,9 @@ quest.sock = function(path) {
 
 quest.stream = function(url, headers) {
   const err = new Error()
-  const thru = new PassThrough()
+  const res = new Readable({
+    read: noop, // Push only
+  })
 
   let req
   if (url instanceof http.ClientRequest) {
@@ -44,18 +47,18 @@ quest.stream = function(url, headers) {
     err.headers = headers
   }
 
-  req.on('response', (res) => {
-    thru.status = res.statusCode
-    thru.headers = res.headers
+  req.on('response', (stream) => {
+    res.status = stream.statusCode
+    res.headers = stream.headers
   })
 
-  quest.ok(req, err).then(res => {
-    res.pipe(thru)
-  }, (err) => {
-    thru.emit('error', err)
-  })
+  quest.ok(req, err).then(stream => {
+    stream.on('data', (chunk) => res.push(chunk))
+    stream.on('end', () => res.push(null))
+    res.on('end', () => stream.destroy())
+  }, (err) => res.emit('error', err))
 
-  return thru
+  return res
 }
 
 quest.ok = function(req, e) {
