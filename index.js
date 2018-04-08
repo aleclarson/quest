@@ -77,17 +77,24 @@ quest.ok = function(req, e) {
       reject(err)
     }
     req.on('error', onError)
-    req.on('response', (res) => {
-      const status = res.statusCode
+    req.on('response', async (res) => {
+      let status = res.statusCode
       if (status >= 200 && status < 300) {
         res.on('error', onError)
         resolve(res)
       } else {
+        let msg = res.headers['error'] || res.headers['x-error']
+        if (!msg) {
+          try {
+            // Look in the response body for an error message.
+            let json = await readJson(res)
+            if (msg = json.error) {
+              status = json.code || status
+            }
+          } catch(e) {}
+        }
         err.code = status
-        err.message =
-          res.headers['error'] ||
-          res.headers['x-error'] ||
-          status + ' ' + http.STATUS_CODES[status]
+        err.message = msg || status + ' ' + http.STATUS_CODES[status]
         reject(err)
       }
     })
@@ -130,6 +137,12 @@ quest.json = function(url, headers) {
   const res = url.readable ? url : quest.stream(url, headers)
   return new Promise((resolve, reject) => {
     res.on('error', reject)
+    readJson(res).then(resolve, reject)
+  })
+}
+
+function readJson(res) {
+  return new Promise((resolve, reject) => {
     concat(res, (body) => {
       if (!body.length) {
         return resolve(null)
