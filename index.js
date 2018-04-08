@@ -1,4 +1,4 @@
-const {Readable} = require('stream')
+const {Readable} = require('readable-stream')
 const https = require('https')
 const http = require('http')
 
