@@ -41,11 +41,13 @@ quest.stream = function(url, headers) {
 
   let req
   if (url instanceof http.ClientRequest) {
-    req = url
-  } else {
+    req = quest.send(url, headers)
+  } else if (typeof url == 'string') {
     req = quest('GET', url, headers)
     err.url = url
     err.headers = headers
+  } else {
+    throw TypeError('Expected a URL string or a ClientRequest object')
   }
 
   req.on('response', (stream) => {
