@@ -55,6 +55,7 @@ quest.stream = function(url, headers) {
     res.ok = status >= 200 && status < 300
     res.status = status
     res.headers = stream.headers
+    res.emit('response')
   })
 
   quest.ok(req, err).then(stream => {
