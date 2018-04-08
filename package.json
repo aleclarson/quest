@@ -1,6 +1,6 @@
 {
   "name": "quest",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "dependencies": {
     "readable-stream": "^2.3.6"
   }
