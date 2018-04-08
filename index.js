@@ -117,7 +117,7 @@ quest.send = function(req, body) {
     req.setHeader('Content-Length', Buffer.byteLength(body))
     req.write(body)
   }
-  return quest.stream(req)
+  return req
 }
 
 quest.read = function(res) {
