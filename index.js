@@ -60,12 +60,15 @@ quest.stream = function(url, headers) {
     stream.emit('connect')
 
     // Pipe the response into our readable stream.
+    res.on('error', uhoh)
     res.on('data', (data) => stream.push(data))
     res.on('end', () => stream.push(null))
-  }, (err) => {
+  }, uhoh)
+
+  function uhoh(err) {
     // Ignore errors after abort()
     req.aborted || stream.emit('error', err)
-  })
+  }
 
   return stream.on('end', () => {
     const {res} = req
@@ -88,7 +91,6 @@ quest.ok = function(req, e) {
     req.on('response', async (res) => {
       let status = res.statusCode
       if (status >= 200 && status < 300) {
-        res.on('error', onError)
         resolve(res)
       } else {
         let msg = res.headers['error'] || res.headers['x-error']
@@ -144,13 +146,13 @@ quest.fetch = function(url, headers) {
 quest.json = function(url, headers) {
   const res = url.readable ? url : quest.stream(url, headers)
   return new Promise((resolve, reject) => {
-    res.on('error', reject)
     readJson(res).then(resolve, reject)
   })
 }
 
 function readJson(res) {
   return new Promise((resolve, reject) => {
+    res.on('error', reject)
     concat(res, (body) => {
       if (!body.length) {
         return resolve(null)
