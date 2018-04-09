@@ -35,7 +35,7 @@ quest.sock = function(path) {
 
 quest.stream = function(url, headers) {
   const err = new Error()
-  const res = new Readable({
+  const stream = new Readable({
     read: noop, // Push only
   })
 
@@ -50,21 +50,29 @@ quest.stream = function(url, headers) {
     throw TypeError('Expected a URL string or a ClientRequest object')
   }
 
-  req.on('response', (stream) => {
-    let status = stream.statusCode
-    res.ok = status >= 200 && status < 300
-    res.status = status
-    res.headers = stream.headers
-    res.emit('response')
+  req.on('close', () => {
+    stream.emit('close')
   })
 
-  quest.ok(req, err).then(stream => {
-    stream.on('data', (chunk) => res.push(chunk))
-    stream.on('end', () => res.push(null))
-    res.on('end', () => stream.destroy())
-  }, (err) => res.emit('error', err))
+  quest.ok(req, err).then(res => {
+    stream.status = res.statusCode
+    stream.headers = res.headers
+    stream.emit('connect')
 
-  return res
+    // Pipe the response into our readable stream.
+    res.on('data', (data) => stream.push(data))
+    res.on('end', () => stream.push(null))
+  }, (err) => {
+    // Ignore errors after abort()
+    req.aborted || stream.emit('error', err)
+  })
+
+  return stream.on('end', () => {
+    const {res} = req
+    if (!res || res.readable) {
+      req.abort() // The user destroyed the stream.
+    }
+  })
 }
 
 quest.ok = function(req, e) {
