@@ -50,10 +50,15 @@ quest.stream = function(url, headers) {
     throw TypeError('Expected a URL string or a ClientRequest object')
   }
 
+  let id = Math.random().toString().slice(3, 8)
   req.on('close', () => {
+    console.log('req.close:', id)
     stream.emit('close')
+  }).on('response', () => {
+    console.log('req.connect:', id)
   })
 
+  console.log('req.start:', id)
   quest.ok(req, err).then(res => {
     stream.status = res.statusCode
     stream.headers = res.headers
@@ -71,6 +76,7 @@ quest.stream = function(url, headers) {
   }
 
   return stream.on('end', () => {
+    console.log('stream.end:', id)
     const {res} = req
     if (!res || res.readable) {
       req.abort() // The user destroyed the stream.
