@@ -83,6 +83,7 @@ quest.ok = function(req, e) {
   return new Promise((resolve, reject) => {
     const onError = (e) => {
       req.destroy()
+      err.name = e.name
       err.code = e.code
       err.message = e.message
       reject(err)
