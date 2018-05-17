@@ -217,3 +217,12 @@ function bind(method) {
     return quest[method](this.request('GET', ...arguments))
   }
 }
+
+Object.assign(http.ClientRequest.prototype, {
+  then(next, onError) {
+    return this.end().then(done, onError)
+  },
+  catch(onError) {
+    return this.end().catch(onError)
+  }
+})
