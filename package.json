@@ -1,6 +1,9 @@
 {
-  "name": "quest",
+  "name": "@aleclarson/quest",
   "version": "0.8.1",
+  "license": "MIT",
+  "repository": "aleclarson/quest",
+  "description": "Isomorphic HTTP client",
   "dependencies": {
     "readable-stream": "^2.3.6"
   }
