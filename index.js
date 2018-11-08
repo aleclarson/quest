@@ -5,6 +5,8 @@ const http = require('http')
 const urlRE = /(.+):\/\/([^\/\:]+)(?:\:([^\/]+))?(.*)/
 const protocols = {http, https}
 const noop = Function.prototype
+const def = (obj, key, val) =>
+  Object.defineProperty(obj, key, {value: val, configurable: true})
 
 module.exports = quest
 
@@ -83,9 +85,9 @@ quest.ok = function(req, e) {
   return new Promise((resolve, reject) => {
     const onError = (e) => {
       req.destroy()
-      err.name = e.name
       err.code = e.code
-      err.message = e.message
+      def(err, 'name', e.name)
+      def(err, 'message', e.message)
       reject(err)
     }
     req.on('error', onError)
@@ -162,8 +164,8 @@ function readJson(res) {
         resolve(JSON.parse(body.toString()))
       } catch(e) {
         const {error} = res
-        error.body = body
-        error.message = e.message
+        def(error, 'body', body)
+        def(error, 'message', e.message)
         reject(error)
       }
     })
