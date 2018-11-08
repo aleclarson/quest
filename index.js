@@ -163,7 +163,7 @@ function readJson(res) {
       try {
         resolve(JSON.parse(body.toString()))
       } catch(e) {
-        const {error} = res
+        const error = res.error || new Error()
         def(error, 'body', body)
         def(error, 'message', e.message)
         reject(error)
