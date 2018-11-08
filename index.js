@@ -221,6 +221,9 @@ function bind(method) {
 }
 
 Object.assign(http.ClientRequest.prototype, {
+  ok() {
+    return quest.ok(this);
+  },
   then(next, onError) {
     return this.end().then(done, onError)
   },
