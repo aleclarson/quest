@@ -6,5 +6,8 @@
   "description": "Isomorphic HTTP client",
   "dependencies": {
     "readable-stream": "^2.3.6"
+  },
+  "devDependencies": {
+    "prettier": "^1.14.3"
   }
 }

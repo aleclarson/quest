@@ -1,12 +1,12 @@
-const {Readable} = require('readable-stream')
+const { Readable } = require('readable-stream')
 const https = require('https')
 const http = require('http')
 
 const urlRE = /(.+):\/\/([^\/\:]+)(?:\:([^\/]+))?(.*)/
-const protocols = {http, https}
+const protocols = { http, https }
 const noop = Function.prototype
 const def = (obj, key, val) =>
-  Object.defineProperty(obj, key, {value: val, configurable: true})
+  Object.defineProperty(obj, key, { value: val, configurable: true })
 
 module.exports = quest
 
@@ -63,7 +63,7 @@ quest.stream = function(url, headers) {
 
     // Pipe the response into our readable stream.
     res.on('error', uhoh)
-    res.on('data', (data) => stream.push(data))
+    res.on('data', data => stream.push(data))
     res.on('end', () => stream.push(null))
   }, uhoh)
 
@@ -73,7 +73,7 @@ quest.stream = function(url, headers) {
   }
 
   return stream.on('end', () => {
-    const {res} = req
+    const { res } = req
     if (!res || res.readable) {
       req.abort() // The user destroyed the stream.
     }
@@ -83,7 +83,7 @@ quest.stream = function(url, headers) {
 quest.ok = function(req, e) {
   const err = e || new Error()
   return new Promise((resolve, reject) => {
-    const onError = (e) => {
+    const onError = e => {
       req.destroy()
       err.code = e.code
       def(err, 'name', e.name)
@@ -91,7 +91,7 @@ quest.ok = function(req, e) {
       reject(err)
     }
     req.on('error', onError)
-    req.on('response', async (res) => {
+    req.on('response', async res => {
       let status = res.statusCode
       if (status >= 200 && status < 300) {
         resolve(res)
@@ -101,10 +101,10 @@ quest.ok = function(req, e) {
           try {
             // Look in the response body for an error message.
             let json = await readJson(res)
-            if (msg = json.error) {
+            if ((msg = json.error)) {
               status = json.code || status
             }
-          } catch(e) {}
+          } catch (e) {}
         }
         err.code = status
         err.message = msg || status + ' ' + http.STATUS_CODES[status]
@@ -156,13 +156,13 @@ quest.json = function(url, headers) {
 function readJson(res) {
   return new Promise((resolve, reject) => {
     res.on('error', reject)
-    concat(res, (body) => {
+    concat(res, body => {
       if (!body.length) {
         return resolve(null)
       }
       try {
         resolve(JSON.parse(body.toString()))
-      } catch(e) {
+      } catch (e) {
         const error = res.error || new Error()
         def(error, 'body', body)
         def(error, 'message', e.message)
@@ -175,11 +175,13 @@ function readJson(res) {
 // Buffer the entire stream into memory.
 function concat(res, done) {
   const chunks = []
-  res.on('data', (chunk) => {
-    chunks.push(chunk)
-  }).on('end', () => {
-    done(Buffer.concat(chunks))
-  })
+  res
+    .on('data', chunk => {
+      chunks.push(chunk)
+    })
+    .on('end', () => {
+      done(Buffer.concat(chunks))
+    })
 }
 
 function prepareHeaders(headers) {
@@ -222,12 +224,12 @@ function bind(method) {
 
 Object.assign(http.ClientRequest.prototype, {
   ok() {
-    return quest.ok(this);
+    return quest.ok(this)
   },
   then(next, onError) {
     return this.end().then(done, onError)
   },
   catch(onError) {
     return this.end().catch(onError)
-  }
+  },
 })
