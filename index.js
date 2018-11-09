@@ -222,14 +222,20 @@ function bind(method) {
   }
 }
 
-Object.assign(http.ClientRequest.prototype, {
-  ok() {
-    return quest.ok(this)
-  },
-  then(next, onError) {
-    return this.end().then(done, onError)
-  },
-  catch(onError) {
-    return this.end().catch(onError)
-  },
-})
+const requestProto = http.ClientRequest.prototype
+quest.augmentRequest = function(request) {
+  if (!(request instanceof requestProto)) {
+    throw Error('Expected a ClientRequest object')
+  }
+  Object.assign(requestProto, {
+    ok() {
+      return quest.ok(this)
+    },
+    then(next, onError) {
+      return this.end().then(done, onError)
+    },
+    catch(onError) {
+      return this.end().catch(onError)
+    },
+  })
+}
