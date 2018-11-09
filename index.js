@@ -93,22 +93,40 @@ quest.ok = function(req, e) {
     req.on('error', onError)
     req.on('response', async res => {
       let status = res.statusCode
-      if (status >= 200 && status < 300) {
-        resolve(res)
-      } else {
-        let msg = res.headers['error'] || res.headers['x-error']
-        if (!msg) {
-          try {
-            // Look in the response body for an error message.
-            let json = await readJson(res)
-            if ((msg = json.error)) {
-              status = json.code || status
+      switch (String(status).charAt(0)) {
+        case '4':
+        case '5':
+          let msg = res.headers['error'] || res.headers['x-error']
+          if (!msg) {
+            try {
+              // Look in the response body for an error message.
+              let json = await readJson(res)
+              if ((msg = json.error)) {
+                status = json.code || status
+              }
+            } catch (e) {}
+          }
+          err.code = status
+          err.message = msg || status + ' ' + http.STATUS_CODES[status]
+          reject(err)
+          break
+
+        case '3':
+          // Handle redirections
+          if (status == 301 || status == 302) {
+            let location = res.headers['location']
+            if (location[0] == '/') {
+              location =
+                req.agent.protocol + '//' + req.getHeader('host') + location
             }
-          } catch (e) {}
-        }
-        err.code = status
-        err.message = msg || status + ' ' + http.STATUS_CODES[status]
-        reject(err)
+            // TODO: Bail after 4 redirections.
+            req = quest(req.method, location, req.getHeaders())
+            quest.ok(req, err).then(resolve, reject)
+            break
+          }
+
+        default:
+          resolve(res)
       }
     })
     req.end()
